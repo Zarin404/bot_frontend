@@ -4,21 +4,28 @@ const messages = document.getElementById("messages");
 const input = document.getElementById("user-input");
 const sendBtn = document.getElementById("send-btn");
 
-// Toggle chatbox visibility using class
+// Toggle chatbox visibility
 toggle.onclick = () => {
   chatbox.classList.toggle("active");
 };
 
-// Append message and auto-scroll
+// Append message to chat with proper alignment and spacing
 function appendMessage(text, sender) {
   const msgDiv = document.createElement("div");
   msgDiv.className = `message ${sender}`;
   msgDiv.textContent = text;
   messages.appendChild(msgDiv);
+
+  // Add spacing between messages
+  const spacer = document.createElement("div");
+  spacer.style.height = "8px";
+  messages.appendChild(spacer);
+
+  // Auto-scroll to bottom
   messages.scrollTop = messages.scrollHeight;
 }
 
-// Send user message to backend
+// Send user message to HF Space backend
 function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
@@ -26,14 +33,14 @@ function sendMessage() {
   appendMessage(text, "user");
   input.value = "";
 
-  fetch("RENDER_BACKEND_URL/ask", {
+  fetch("https://YOUR_USERNAME-YOUR_SPACE_NAME.hf.space/run/predict", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: text })
+    body: JSON.stringify({ data: [text] }) // HF expects input as array in "data"
   })
   .then(res => res.json())
   .then(data => {
-    appendMessage(data.reply, "bot");
+    appendMessage(data.data[0], "bot"); // HF returns output inside data.data array
   })
   .catch(err => {
     appendMessage("Error connecting to bot.", "bot");
@@ -44,7 +51,7 @@ function sendMessage() {
 // Send on button click
 sendBtn.onclick = sendMessage;
 
-// Optional: send on Enter key
+// Send on Enter key press
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter") sendMessage();
 });
