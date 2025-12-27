@@ -4,12 +4,10 @@ const messages = document.getElementById("messages");
 const input = document.getElementById("user-input");
 const sendBtn = document.getElementById("send-btn");
 
-// Toggle chatbox visibility
 toggle.onclick = () => {
   chatbox.classList.toggle("active");
 };
 
-// Append message to chat
 function appendMessage(text, sender) {
   const msgDiv = document.createElement("div");
   msgDiv.className = `message ${sender}`;
@@ -18,7 +16,6 @@ function appendMessage(text, sender) {
   messages.scrollTop = messages.scrollHeight;
 }
 
-// Send message to HF Space backend
 function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
@@ -26,32 +23,35 @@ function sendMessage() {
   appendMessage(text, "user");
   input.value = "";
 
-  fetch("https://huggingface.co/spaces/ZarOUT/bot_backendHF/ask", {
+  fetch("/ask", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
-      message: text,
-      session_id: "web" // optional: can track sessions
+      message: text
     })
   })
-    .then(res => res.json())
-    .then(data => {
-      let reply = "Sorry, no reply.";
-      if (data?.reply) {
-        reply = data.reply; // FastAPI returns { "reply": "..." }
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Backend error");
       }
-      appendMessage(reply, "bot");
+      return res.json();
+    })
+    .then(data => {
+      appendMessage(data.reply, "bot");
     })
     .catch(err => {
-      appendMessage("Error connecting to bot.", "bot");
       console.error(err);
+      appendMessage("Error connecting to bot.", "bot");
     });
 }
 
-// Send message on button click
 sendBtn.onclick = sendMessage;
 
-// Send message on Enter key press
 input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendMessage();
+  if (e.key === "Enter") {
+    sendMessage();
+  }
 });
+
