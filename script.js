@@ -26,7 +26,7 @@ function sendMessage() {
   appendMessage(text, "user");
   input.value = "";
 
-  fetch("https://api-inference.huggingface.co/models/ZarOUT/bot_backendHF", {
+  fetch("https://huggingface.co/spaces/ZarOUT/bot_backendHF/api/predict/", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ inputs: text })
